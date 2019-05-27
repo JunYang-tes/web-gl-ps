@@ -14,11 +14,13 @@ import React.Basic.DOM as D
 import Debug
 import Prelude
 import Demos.Rotate
+import Demos.RotationInsideShader
 
 helloGL = unsafePerformEffect mkHelloGL
 rotate = unsafePerformEffect mkRotate
 demos =  fromFoldable ["hello" /\ helloGL,
-    "rotate" /\ rotate
+    "rotate" /\ rotate,
+    "rotate inside" /\ (unsafePerformEffect mkRotateInside)
   ]
 
 mkDemo :: RH.CreateComponent {}
@@ -26,12 +28,15 @@ mkDemo = do
   RH.component "Demos" \p -> RH.do
     let ks = keys demos
     selected /\ setSelected <- RH.useState (null::(Nullable (ReactComponent(Record()))))
+    selectedKey /\ setSelectedKey <- RH.useState ("")
     pure $  D.div {
       className: "demo",
       children:([
         D.ul_ $ map (\k -> 
           D.li { children:  [D.text k] 
+                ,className: if selectedKey == k then "selected" else ""
                 ,onClick: capture_ do
+                  setSelectedKey \_ -> k
                   setSelected \_ -> toNullable $ lookup k demos
           }) $ Array.fromFoldable ks
       ]<> case toMaybe $ selected of
