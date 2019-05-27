@@ -43,13 +43,31 @@ module WebGL(
   ,enable
   ,enable_depth_test
   ,EnableMask
+  ,getUniformLocation
+  ,WebGLUniformLocation
+  ,uniform1f
+  ,uniform1fv
+  ,uniform2f
+  ,uniform2fv
+  ,uniform3f
+  ,uniform3fv
+  ,uniform4f
+  ,uniform4fv
+  ,uniform1iv
+  ,uniform2i 
+  ,uniform2iv
+  ,uniform3i 
+  ,uniform3iv
+  ,uniform4i 
+  ,uniform4iv
 ) where
 
-import Effect
-import Prelude
+import Effect (Effect)
+import Prelude (Unit)
+import Web.HTML.HTMLCanvasElement (HTMLCanvasElement)
 
 import Data.Either (Either(..))
-import Web.HTML.HTMLCanvasElement
+import Data.Maybe (Maybe(..))
 
 
 class MaskBit a where
@@ -206,3 +224,31 @@ enable_depth_test :: EnableMask
 enable_depth_test = EnableMask 2929
 foreign import enable ::
   WebGLRenderingContext -> EnableMask -> Effect Unit
+
+
+foreign import data WebGLUniformLocation :: Type
+foreign import getUniformLocationImpl :: 
+  Maybe WebGLUniformLocation -> (WebGLUniformLocation ->Maybe WebGLUniformLocation)->
+  WebGLRenderingContext -> WebGLProgram -> String -> Effect( Maybe WebGLUniformLocation)
+
+getUniformLocation::WebGLRenderingContext-> WebGLProgram -> String -> Effect(Maybe WebGLUniformLocation)
+getUniformLocation = getUniformLocationImpl Nothing Just
+
+foreign import uniform1f :: WebGLRenderingContext -> WebGLUniformLocation -> Number -> Effect Unit
+foreign import uniform1fv :: WebGLRenderingContext -> WebGLUniformLocation ->Array Number -> Effect Unit
+foreign import uniform2f :: WebGLRenderingContext -> WebGLUniformLocation -> Number -> Number -> Effect Unit
+foreign import uniform2fv :: WebGLRenderingContext -> WebGLUniformLocation ->Array Number -> Effect Unit
+foreign import uniform3f :: WebGLRenderingContext -> WebGLUniformLocation -> Number -> Number -> Number -> Effect Unit 
+foreign import uniform3fv :: WebGLRenderingContext -> WebGLUniformLocation ->Array Number -> Effect Unit
+foreign import uniform4f :: WebGLRenderingContext -> WebGLUniformLocation -> Number -> Number -> Number -> Number -> Effect Unit
+foreign import uniform4fv :: WebGLRenderingContext -> WebGLUniformLocation ->Array Number -> Effect Unit
+
+
+foreign import uniform1i :: WebGLRenderingContext -> WebGLUniformLocation -> Int -> Effect Unit
+foreign import uniform1iv :: WebGLRenderingContext -> WebGLUniformLocation ->Array Int -> Effect Unit
+foreign import uniform2i :: WebGLRenderingContext -> WebGLUniformLocation -> Int -> Int -> Effect Unit
+foreign import uniform2iv :: WebGLRenderingContext -> WebGLUniformLocation ->Array Int -> Effect Unit
+foreign import uniform3i :: WebGLRenderingContext -> WebGLUniformLocation -> Int -> Int -> Int -> Effect Unit 
+foreign import uniform3iv :: WebGLRenderingContext -> WebGLUniformLocation ->Array Int -> Effect Unit
+foreign import uniform4i :: WebGLRenderingContext -> WebGLUniformLocation -> Int -> Int -> Int -> Int -> Effect Unit
+foreign import uniform4iv :: WebGLRenderingContext -> WebGLUniformLocation ->Array Int -> Effect Unit

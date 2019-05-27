@@ -1,11 +1,15 @@
 // @ts-check
 
-function effect(fn,count) {
+function effect(fn,count,returnVal) {
   function call() {
     var args = Array.from(arguments)
     if(arguments.length - 1 === count) {
       args.pop()
-      return fn.apply(null,args)
+      if(returnVal){
+        return returnVal(fn.apply(null,args))
+      } else {
+        return (fn.apply(null,args))
+      }
     } else {
       return function(n) {
         args.push(n)
@@ -22,6 +26,22 @@ function GLEffect(name,count) {
   }
 }
 
+function GLEffectMaybe(name,count) {
+  return function(nothing) {
+    return function (just) {
+      return function (gl) {
+        const f = gl[name].bind(gl)
+        return effect(f,count,function(r){
+          if(r){
+            return just(r)
+          }else {
+            return nothing
+          }
+        })
+      }
+    }
+  }
+}
 
 exports.createWebGL = function(
   /** @type {HTMLCanvasElement} */
@@ -185,4 +205,43 @@ exports.enable = GLEffect(
   'enable',
   1
 )
+
+function uniformNIV (name) {
+  return function (gl) {
+    return function (loc) {
+      return function (val) {
+        return function() {
+          var fn = gl[name]
+          fn.call(gl,loc)
+        }
+      }
+    }
+  }
+}
+
+
+exports.getUniformLocationImpl = GLEffectMaybe('getUniformLocation',2)
+
+exports.uniform1f =  GLEffect('uniform1f',2)
+exports.uniform1fv = GLEffect('uniform1fv',2)
+exports.uniform1i =  GLEffect('uniform1i',2)
+exports.uniform1iv = uniformNIV('uniform1iv')
+
+
+exports.uniform2f =  GLEffect('uniform2f',3)
+exports.uniform2fv = GLEffect('uniform2fv',2)
+exports.uniform2i =  GLEffect('uniform2i',3)
+exports.uniform2iv = uniformNIV('uniform2iv')
+
+
+exports.uniform3f =  GLEffect('uniform3f',4)
+exports.uniform3fv = GLEffect('uniform3fv',2)
+exports.uniform3i =  GLEffect('uniform3i',4)
+exports.uniform3iv = uniformNIV('uniform3iv')
+
+
+exports.uniform4f =  GLEffect('uniform4f',5)
+exports.uniform4fv = GLEffect('uniform4fv',2)
+exports.uniform4i =  GLEffect('uniform4i',5)
+exports.uniform4iv = uniformNIV('uniform4iv')
 // exports.clearColor = function() {}
