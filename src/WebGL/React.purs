@@ -3,11 +3,11 @@ import Prelude
 import Prim.Row
 
 import Data.DateTime.Instant (unInstant)
-import Effect.Now (now)
-import Data.Maybe (Maybe(..))
 import Data.Either (Either(..))
-import Debug (debug,debugE, debugEWithTag)
+import Data.Maybe (Maybe(..))
+import Debug (debug, debugE, debugEWithTag)
 import Effect (Effect)
+import Effect.Now (now)
 import Effect.Unsafe (unsafePerformEffect)
 import React.Basic.DOM (canvas, css)
 import React.Basic.DOM as R
@@ -15,16 +15,13 @@ import React.Basic.DOM.Components.Ref (selectorRef)
 import React.Basic.Hooks (CreateComponent, JSX, component, element, useRef)
 import React.Basic.Hooks as RH
 import Record (merge)
-import Web.DOM.ParentNode (QuerySelector(..))
 import Web.DOM.NonElementParentNode (getElementById)
-import Web.HTML.HTMLCanvasElement (fromElement)
+import Web.DOM.ParentNode (QuerySelector(..))
 import Web.HTML (window)
-import Web.HTML.Window (document)
+import Web.HTML.HTMLCanvasElement (fromElement)
 import Web.HTML.HTMLDocument (toNonElementParentNode)
-import WebGL (FragmentShader, VertexShader
-  ,useProgram
-  ,WebGLProgram
-  ,WebGLRenderingContext, createWebGL,createProgram)
+import Web.HTML.Window (document)
+import WebGL (FragmentShader, VertexShader, useProgram, WebGLProgram, WebGLRenderingContext, createWebGL, createProgram)
 type GLHandler = WebGLRenderingContext -> Effect Unit
 type WebGLProps a = (
   width:: Int,
@@ -48,7 +45,7 @@ mkWebGL = do
                                  ,onWebGLCreated: (debugEWithTag "No onWebGLCreated provided":: WebGLRenderingContext -> Effect Unit)
                       } in RH.do
                         let id = show $ unInstant $ unsafePerformEffect $ now
-                        RH.useEffect unit (do
+                        RH.useLayoutEffect unit (do
                           doc <- document =<< window
                           el <- getElementById id $ toNonElementParentNode doc
                           case fromElement =<< el of
@@ -57,7 +54,7 @@ mkWebGL = do
                               webgl <- createWebGL canvas
                               p.onWebGLCreated webgl
 
-                          pure $ debugE "unmount"
+                          pure $ pure unit
                           )
                         pure $ R.canvas { width: show p.width <> "px"
                                           ,height: show p.height <>"px"

@@ -116,12 +116,12 @@ mkRotateInside = do
     glRef <- RH.useRef (null::(Nullable (Tuple WebGLRenderingContext WebGLProgram)))
     glRef_ <-RH.renderRefMaybe glRef
     RH.useEffect (show rx <> show ry <> show rz) do
-      pure case glRef_ of
-        Nothing -> pure $ unit
+      case glRef_ of
+        Nothing -> pure unit
         Just (gl /\ prog) -> do
           debugE ("update" <> (show rx))
           update gl prog rx ry rz
-          pure $ unit
+      pure $ pure $unit
 
     pure $ D.div_ [rx_ele
       ,ry_ele

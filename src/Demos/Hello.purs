@@ -73,10 +73,10 @@ mkHelloGL = do
     ref <- RH.useRef (null :: Nullable (Tuple WebGLRenderingContext WebGLProgram) )
     r <- RH.renderRefMaybe ref
     RH.useEffect (show x <> show val) do
-      pure case r of
+      case r of
         Nothing -> debugE "No ref yet"
         Just (gl /\ prog) -> updateGL gl prog val x
-    let _ = debug "rerendre"
+      pure $ pure unit
 
     pure $ D.div_ [
       ele
