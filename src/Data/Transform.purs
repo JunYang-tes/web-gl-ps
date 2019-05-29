@@ -7,6 +7,8 @@ module Data.Matrix.Transform(
   ,class VectorTransform
   ,(|=>),transVectors
   ,scaleX
+  ,scaleY
+  ,scaleZ
 ) where
 
 import Prelude
@@ -42,6 +44,18 @@ scaleX :: Number -> Matrix M4
 scaleX s = mat4 s   0.0 0.0 0.0
                 0.0 1.0 0.0 0.0
                 0.0 0.0 1.0 0.0
+                0.0 0.0 0.0 1.0
+
+scaleY :: Number -> Matrix M4
+scaleY s = mat4 1.0 0.0 0.0 0.0
+                0.0 s   0.0 0.0
+                0.0 0.0 1.0 0.0
+                0.0 0.0 0.0 1.0
+
+scaleZ :: Number -> Matrix M4
+scaleZ s = mat4 1.0 0.0 0.0 0.0
+                0.0 1.0 0.0 0.0
+                0.0 0.0 s   0.0
                 0.0 0.0 0.0 1.0
 
 rotateXM3 :: Number -> Matrix M3
