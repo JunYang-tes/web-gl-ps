@@ -15,12 +15,14 @@ import Debug
 import Prelude
 import Demos.Rotate
 import Demos.RotationInsideShader
+import Demos.Scale
 
 helloGL = unsafePerformEffect mkHelloGL
 rotate = unsafePerformEffect mkRotate
 demos =  fromFoldable ["hello" /\ helloGL,
     "rotate" /\ rotate,
-    "rotate inside" /\ (unsafePerformEffect mkRotateInside)
+    "rotate inside" /\ (unsafePerformEffect mkRotateInside),
+    "scale" /\ (unsafePerformEffect mkScaleDemo)
   ]
 
 mkDemo :: RH.CreateComponent {}

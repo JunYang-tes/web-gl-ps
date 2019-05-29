@@ -14,19 +14,20 @@ module Data.Matrix(mat2
 ,getOrder
 ,subMat
 ,fdet
+,flattenM
 ) where
-import Data.Maybe (Maybe(..))
 import Prelude
 
-import Partial.Unsafe (unsafePartial)
+import Control.Monad.ST (run, for)
+import Control.Monad.ST (run, for)
+import Data.Array (concat, foldl, index, length, slice, snoc, unsafeIndex, zipWith)
 import Data.Array.ST (withArray)
-import Data.Array.ST.Partial (poke,peek)
-import Control.Monad.ST (run,for)
+import Data.Array.ST (withArray)
+import Data.Array.ST.Partial (poke, peek)
 import Data.ArrayEx (filterp)
-import Data.Array (unsafeIndex,zipWith, length, index, slice, foldl, snoc)
-import Debug (debug,debugc)
-import Control.Monad.ST (run,for)
-import Data.Array.ST(withArray)
+import Data.Maybe (Maybe(..))
+import Debug (debug, debugc)
+import Partial.Unsafe (unsafePartial)
 
 data Matrix m = Matrix (Array Number) m
 data M2 = M2
@@ -278,7 +279,8 @@ fdet t (Matrix arr o) = calcDet arr (getOrder o)
               pure row
               ) firstRow))
 
-
+flattenM :: forall m. (MatrixOps m)=> Matrix m -> Array Number
+flattenM m = concat $ rows $ transpose m
 
 instance m4Math :: MatrixOps M4 where
   transpose = ftrans M4
