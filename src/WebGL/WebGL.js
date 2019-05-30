@@ -146,25 +146,35 @@ exports.bindBuffer = GLEffect(
   "bindBuffer",
   2
 )
-exports.bufferData = function (
-  /** @type {WebGLRenderingContext} */
-  gl) {
-  return function (type) {
-    return function (arr) {
-      return function (usage) {
-        return function () {
-          const data = new Float32Array(arr)
-          gl.bufferData(
-            type,
-            data,
-            usage
-          )
-          
+
+function creatBufferData (typedArray) {
+  return function (
+    /** @type {WebGLRenderingContext} */
+    gl) {
+    return function (type) {
+      return function (arr) {
+        return function (usage) {
+          return function () {
+            const data =  new typedArray(arr)
+            gl.bufferData(
+              type,
+              data,
+              usage
+            )
+          }
         }
       }
     }
   }
 }
+
+exports.bufferData = creatBufferData(
+  Float32Array
+)
+
+exports.bufferDataUInt32 = creatBufferData(
+  Uint32Array
+)
 
 exports.getAttribLocation = GLEffect(
   'getAttribLocation',2

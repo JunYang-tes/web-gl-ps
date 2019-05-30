@@ -32,6 +32,8 @@ module WebGL(
   ,dm_line_loop,dm_line_strip,dm_lines,dm_points,dm_triangle_fan,dm_triangle_strip,dm_triangles
   ,drawArrays
   ,enableVertexAttribArray
+  ,BufferData
+  ,bufferDataUInt32
   ,bindBuffer
   ,ClearMask
   ,clear_color_buffer_bit
@@ -64,7 +66,7 @@ module WebGL(
 ) where
 
 import Data.Either (Either(..))
-import Data.Matrix (M4(..), Matrix, flattenM)
+import Data.Matrix (M4, Matrix, flattenM)
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Prelude (Unit)
@@ -122,12 +124,12 @@ usage_dynamic_draw = Usage 35048
 usage_stream_draw :: Usage
 usage_stream_draw = Usage 35040
 
-foreign import bufferData
-  :: WebGLRenderingContext ->
-    BufferType ->
-    Array Number ->
-    Usage ->
-    Effect Unit
+
+type BufferData a = WebGLRenderingContext -> BufferType -> Array a -> Usage -> Effect Unit
+
+foreign import bufferData :: BufferData Number
+
+foreign import bufferDataUInt32 :: BufferData Int
     
 foreign import data Position :: Type
 
