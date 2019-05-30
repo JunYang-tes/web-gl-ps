@@ -1,7 +1,7 @@
 module Demo where
 import Data.Maybe
 import Data.Tuple.Nested((/\))
-import Data.Map (fromFoldable,keys,lookup)
+import Data.Map (fromFoldable,lookup)
 import Data.Array as Array
 import Data.Nullable
 import Demos.HelloGL
@@ -16,19 +16,33 @@ import Prelude
 import Demos.Rotate
 import Demos.RotationInsideShader
 import Demos.Scale
+import Demos.DrawElements
 
-helloGL = unsafePerformEffect mkHelloGL
-rotate = unsafePerformEffect mkRotate
-demos =  fromFoldable ["hello" /\ helloGL,
-    "rotate" /\ rotate,
-    "rotate inside" /\ (unsafePerformEffect mkRotateInside),
-    "scale" /\ (unsafePerformEffect mkScaleDemo)
-  ]
+
+keys:: Array String
+keys = [
+    "hello" ,
+    "cube (drawElements)" ,
+    "rotate" ,
+    "rotate inside" ,
+    "scale"
+]
+ 
+
+demoComponents = map unsafePerformEffect [
+  mkHelloGL,
+  mkDrawElementDemo,
+  mkRotate,
+  mkRotateInside,
+  mkScaleDemo
+]
+demos =  fromFoldable $
+  Array.zipWith (\n c -> n /\ c) keys demoComponents
+
 
 mkDemo :: RH.CreateComponent {}
 mkDemo = do
   RH.component "Demos" \p -> RH.do
-    let ks = keys demos
     selected /\ setSelected <- RH.useState (null::(Nullable (ReactComponent(Record()))))
     selectedKey /\ setSelectedKey <- RH.useState ("")
     pure $  D.div {
@@ -40,7 +54,7 @@ mkDemo = do
                 ,onClick: capture_ do
                   setSelectedKey \_ -> k
                   setSelected \_ -> toNullable $ lookup k demos
-          }) $ Array.fromFoldable ks
+          }) keys
       ]<> case toMaybe $ selected of
             Nothing -> [D.div { children: [D.text "No demo selected."],className:"selected-demo"}]
             Just d  -> [D.div { children:[ element d {}], className:"selected-demo" }] )}

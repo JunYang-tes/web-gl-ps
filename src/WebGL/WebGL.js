@@ -206,6 +206,10 @@ exports.drawArrays = GLEffect(
   'drawArrays',
   3
 )
+exports.drawElements = GLEffect(
+  'drawElements',
+  4
+)
 exports.orImpl = function(a) {
   return function(b) {
     return a | b

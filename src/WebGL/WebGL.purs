@@ -31,6 +31,11 @@ module WebGL(
   ,DrawMode
   ,dm_line_loop,dm_line_strip,dm_lines,dm_points,dm_triangle_fan,dm_triangle_strip,dm_triangles
   ,drawArrays
+  ,DE_ByteType
+  ,unsigned_byte 
+  ,unsigned_short
+  ,unsigned_int  
+  ,drawElements
   ,enableVertexAttribArray
   ,BufferData
   ,bufferDataUInt32
@@ -207,6 +212,15 @@ dm_triangle_fan = DrawMode 6
 
 foreign import drawArrays ::
   WebGLRenderingContext -> DrawMode -> Int -> Int -> Effect Unit
+
+newtype DE_ByteType = DE_ByteType Int
+
+unsigned_byte  = DE_ByteType 5121
+unsigned_short = DE_ByteType 5123
+unsigned_int   = DE_ByteType 5125
+
+foreign import drawElements ::
+  WebGLRenderingContext -> DrawMode -> Int -> DE_ByteType -> Int -> Effect Unit 
 
 foreign import bindBuffer
   :: WebGLRenderingContext -> BufferType -> WebGLBuffer -> Effect Unit
