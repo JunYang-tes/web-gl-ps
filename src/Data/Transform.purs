@@ -5,13 +5,18 @@ module Data.Matrix.Transform(
   ,rotateZM4
   ,(|>>),trans
   ,class VectorTransform
+  ,(|=>),transVectors
+  ,scaleX
+  ,scaleY
+  ,scaleZ
 ) where
 
 import Prelude
 
+import Data.Tuple.Nested
 import Data.Array (foldl, zipWith)
 import Data.Matrix (class MatrixOps, class MatrixOrder, M3(..), M4(..), Matrix, getOrder, mat3, mat4, rows)
-import Data.Vector (class VectorDim, Vector(..), getDim, V3(..), V4(..))
+import Data.Vector (class VectorDim, V3(..), V4(..), Vector(..), getDim)
 import Math (cos, pi, sin)
 
 radians :: Number -> Number
@@ -34,6 +39,24 @@ rotateXM4 a = let s = sin( radians a) in
                 0.0  c   (-s) 0.0
                 0.0  s   c    0.0
                 0.0  0.0 0.0  1.0
+
+scaleX :: Number -> Matrix M4
+scaleX s = mat4 s   0.0 0.0 0.0
+                0.0 1.0 0.0 0.0
+                0.0 0.0 1.0 0.0
+                0.0 0.0 0.0 1.0
+
+scaleY :: Number -> Matrix M4
+scaleY s = mat4 1.0 0.0 0.0 0.0
+                0.0 s   0.0 0.0
+                0.0 0.0 1.0 0.0
+                0.0 0.0 0.0 1.0
+
+scaleZ :: Number -> Matrix M4
+scaleZ s = mat4 1.0 0.0 0.0 0.0
+                0.0 1.0 0.0 0.0
+                0.0 0.0 s   0.0
+                0.0 0.0 0.0 1.0
 
 rotateXM3 :: Number -> Matrix M3
 rotateXM3 a = let s = sin( radians a) in
@@ -73,12 +96,26 @@ rotateZM4 a = let s = sin $ radians a in
                 0.0   0.0   1.0 0.0
                 0.0   0.0   0.0 1.0
 
+frotate :: (Vector V4 -> (Number /\ Number /\ Number)) -> Array (Vector V4) -> Array (Vector V4)
+frotate f vs = vs
+-- frotate f  = map (\v->
+--               let (rx /\ ry /\ rz) = f v in
+--                 rotateXM4 rx |>> rotateYM4 ry |>> rotateZM4 rz |>> v
+--               )
 
 
 class VectorTransform o m where
   trans:: Matrix m -> Vector o ->  Vector o
 
 infixr 6 trans as |>>
+
+transVectors:: forall d m. (VectorTransform d m)=>
+  Matrix m -> Array (Vector d) -> Array (Vector d)
+transVectors m = map (\v -> m |>> v)
+
+infixr 6 transVectors as |=>
+
+
 
 ftrans :: forall o m. (MatrixOrder m) => (VectorDim o) =>
   (MatrixOps m) =>

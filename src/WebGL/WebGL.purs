@@ -60,14 +60,15 @@ module WebGL(
   ,uniform3iv
   ,uniform4i 
   ,uniform4iv
+  ,uniformMat4f
 ) where
 
+import Data.Either (Either(..))
+import Data.Matrix (M4(..), Matrix, flattenM)
+import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Prelude (Unit)
 import Web.HTML.HTMLCanvasElement (HTMLCanvasElement)
-
-import Data.Either (Either(..))
-import Data.Maybe (Maybe(..))
 
 
 class MaskBit a where
@@ -252,3 +253,9 @@ foreign import uniform3i :: WebGLRenderingContext -> WebGLUniformLocation -> Int
 foreign import uniform3iv :: WebGLRenderingContext -> WebGLUniformLocation ->Array Int -> Effect Unit
 foreign import uniform4i :: WebGLRenderingContext -> WebGLUniformLocation -> Int -> Int -> Int -> Int -> Effect Unit
 foreign import uniform4iv :: WebGLRenderingContext -> WebGLUniformLocation ->Array Int -> Effect Unit
+
+foreign import uniformMat4fImpl 
+  :: (Matrix M4 -> (Array Number)) ->  WebGLRenderingContext -> WebGLUniformLocation -> Matrix M4 -> Effect Unit
+
+uniformMat4f :: WebGLRenderingContext -> WebGLUniformLocation -> Matrix M4 -> Effect Unit
+uniformMat4f = uniformMat4fImpl flattenM

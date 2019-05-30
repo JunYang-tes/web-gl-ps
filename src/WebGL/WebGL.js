@@ -212,7 +212,22 @@ function uniformNIV (name) {
       return function (val) {
         return function() {
           var fn = gl[name]
-          fn.call(gl,loc)
+          fn.call(gl,loc,val)
+        }
+      }
+    }
+  }
+}
+function uniformMatrix(name) {
+  return function(flatten) {
+    return function(gl) {
+      return function(loc) {
+        return function (mat) {
+          return function () {
+            var fn = gl[name]
+            var val = flatten(mat)
+            fn.call(gl,loc,false,val)
+          }
         }
       }
     }
@@ -245,3 +260,5 @@ exports.uniform4fv = GLEffect('uniform4fv',2)
 exports.uniform4i =  GLEffect('uniform4i',5)
 exports.uniform4iv = uniformNIV('uniform4iv')
 // exports.clearColor = function() {}
+
+exports.uniformMat4fImpl = uniformMatrix('uniformMatrix4fv')
