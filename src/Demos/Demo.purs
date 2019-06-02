@@ -1,22 +1,23 @@
 module Demo where
 import Data.Maybe
-import Data.Tuple.Nested((/\))
-import Data.Map (fromFoldable,lookup)
-import Data.Array as Array
 import Data.Nullable
-import Demos.HelloGL
-import Effect.Unsafe (unsafePerformEffect)
-import React.Basic.Hooks(element)
-import React.Basic.DOM.Events(capture_)
-import React.Basic (ReactComponent)
-import React.Basic.Hooks as RH
-import React.Basic.DOM as D
 import Debug
-import Prelude
+import Demos.DrawElements
+import Demos.HelloGL
 import Demos.Rotate
 import Demos.RotationInsideShader
 import Demos.Scale
-import Demos.DrawElements
+import Prelude
+
+import Data.Array as Array
+import Data.Map (fromFoldable, lookup)
+import Data.Tuple.Nested ((/\))
+import Effect.Unsafe (unsafePerformEffect)
+import React.Basic (ReactComponent)
+import React.Basic.DOM as D
+import React.Basic.DOM.Events (capture_)
+import React.Basic.Hooks (element)
+import React.Basic.Hooks as RH
 
 
 keys:: Array String
