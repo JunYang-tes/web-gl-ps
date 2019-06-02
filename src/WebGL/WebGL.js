@@ -175,6 +175,9 @@ exports.bufferData = creatBufferData(
 exports.bufferDataUInt32 = creatBufferData(
   Uint32Array
 )
+exports.bufferDataUInt8 = creatBufferData(
+  Uint8Array
+)
 
 exports.getAttribLocation = GLEffect(
   'getAttribLocation',2

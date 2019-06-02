@@ -38,6 +38,7 @@ module WebGL(
   ,drawElements
   ,enableVertexAttribArray
   ,BufferData
+  ,bufferDataUInt8
   ,bufferDataUInt32
   ,bindBuffer
   ,ClearMask
@@ -135,6 +136,7 @@ type BufferData a = WebGLRenderingContext -> BufferType -> Array a -> Usage -> E
 foreign import bufferData :: BufferData Number
 
 foreign import bufferDataUInt32 :: BufferData Int
+foreign import bufferDataUInt8 :: BufferData Int
     
 foreign import data Position :: Type
 
