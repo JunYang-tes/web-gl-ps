@@ -12,6 +12,7 @@ import Prelude
 import Data.Array as Array
 import Data.Map (fromFoldable, lookup)
 import Data.Tuple.Nested ((/\))
+import Demos.DrawArray (mkDrawArrayDemo)
 import Effect.Unsafe (unsafePerformEffect)
 import React.Basic (ReactComponent)
 import React.Basic.DOM as D
@@ -23,6 +24,7 @@ import React.Basic.Hooks as RH
 keys:: Array String
 keys = [
     "hello" ,
+    "drawArray",
     "cube (drawElements)" ,
     "rotate" ,
     "rotate inside" ,
@@ -32,6 +34,7 @@ keys = [
 
 demoComponents = map unsafePerformEffect [
   mkHelloGL,
+  mkDrawArrayDemo,
   mkDrawElementDemo,
   mkRotate,
   mkRotateInside,

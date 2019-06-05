@@ -1,6 +1,6 @@
 module Main where
 
-import Prelude
+import Prelude (Unit, bind, map, ($), (=<<))
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
 import Effect.Exception (throw)
@@ -10,12 +10,8 @@ import Web.DOM.NonElementParentNode (getElementById)
 import Web.HTML (window)
 import Web.HTML.HTMLDocument (toNonElementParentNode)
 import Web.HTML.Window (document)
-import WebGL.React
 import React.Basic.DOM (div_)
-import WebGL
-import Data.Either (Either(..))
-import Debug
-import Demo
+import Demo (mkDemo)
 
 main :: Effect Unit
 main = do
