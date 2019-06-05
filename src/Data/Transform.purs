@@ -32,6 +32,12 @@ radians a = a * pi / 180.0
     z
 -}
 
+translate :: Number -> Number -> Number -> Matrix M4
+translate x y z = mat4 1.0 0.0 0.0   x
+                       0.0 1.0 0.0   y
+                       0.0 0.0 1.0   z
+                       0.0 0.0 0.0 1.0
+
 rotateXM4 :: Number -> Matrix M4
 rotateXM4 a = let s = sin( radians a) in
               let c = cos(radians a) in mat4 
