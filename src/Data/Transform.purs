@@ -9,6 +9,10 @@ module Data.Matrix.Transform(
   ,scaleX
   ,scaleY
   ,scaleZ
+  ,shearXY
+  ,shearXZ
+  ,shearYX
+  ,shearYZ
 ) where
 
 import Prelude
@@ -17,7 +21,7 @@ import Data.Tuple.Nested
 import Data.Array (foldl, zipWith)
 import Data.Matrix (class MatrixOps, class MatrixOrder, M3(..), M4(..), Matrix, getOrder, mat3, mat4, rows)
 import Data.Vector (class VectorDim, V3(..), V4(..), Vector(..), getDim)
-import Math (cos, pi, sin)
+import Math (cos, pi, sin,tan)
 
 radians :: Number -> Number
 radians a = a * pi / 180.0
@@ -101,6 +105,45 @@ rotateZM4 a = let s = sin $ radians a in
                 s     c     0.0 0.0
                 0.0   0.0   1.0 0.0
                 0.0   0.0   0.0 1.0
+
+cot :: Number -> Number
+cot a = 1.0 / (tan a)
+
+shearXY :: Number -> Matrix M4
+shearXY a = let t = cot $ radians a in
+  mat4 1.0 t 0.0 0.0
+       0.0   1.0 0.0 0.0
+       0.0 0.0 1.0 0.0
+       0.0 0.0 0.0 1.0
+
+shearXZ :: Number -> Matrix M4
+shearXZ a = let t = cot $ radians a in
+  mat4 1.0 0.0   t 0.0
+       0.0 1.0 0.0 0.0
+       0.0 0.0 1.0 0.0
+       0.0 0.0 0.0 1.0
+
+shearYX :: Number -> Matrix M4
+shearYX a = let t = cot $ radians a in
+  mat4 1.0 0.0 0.0 0.0
+       t   1.0 0.0 0.0
+       0.0 0.0 1.0 0.0
+       0.0 0.0 0.0 1.0
+
+
+shearYZ :: Number -> Matrix M4
+shearYZ a = let t = cot $ radians a in
+  mat4 1.0 0.0 0.0 0.0
+       0.0 1.0 t   0.0
+       0.0 0.0 1.0 0.0
+       0.0 0.0 0.0 1.0
+
+shearZ :: Number -> Matrix M4
+shearZ a = let t = cot $ radians a in
+  mat4 1.0 0.0 0.0 0.0
+       0.0 1.0 0.0 0.0
+       0.0 t  1.0 0.0
+       0.0 0.0 0.0 1.0
 
 frotate :: (Vector V4 -> (Number /\ Number /\ Number)) -> Array (Vector V4) -> Array (Vector V4)
 frotate f vs = vs
