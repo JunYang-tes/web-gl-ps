@@ -3,7 +3,7 @@ module Data.Matrix(mat2
 ,M2(..)
 ,M3(..)
 ,M4(..)
-,mat4
+,mat4,i4
 ,mat3
 ,transpose
 ,rows
@@ -103,6 +103,13 @@ mat4 a b c d
      i j k l
      m n o p
      = Matrix [a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p] M4
+    
+i4 :: Matrix M4
+i4 = mat4 1.0 0.0 0.0 0.0
+         0.0 1.0 0.0 0.0
+         0.0 0.0 1.0 0.0
+         0.0 0.0 0.0 1.0
+
 
 fadd:: forall m. m -> Matrix m -> Matrix m -> Matrix m
 fadd m (Matrix a _) (Matrix b _) = (Matrix (zipWith (+) a b) m)

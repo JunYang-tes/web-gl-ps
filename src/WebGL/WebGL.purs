@@ -75,7 +75,7 @@ import Data.Either (Either(..))
 import Data.Matrix (M4, Matrix, flattenM)
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
-import Prelude (Unit)
+import Prelude (class Eq, Unit)
 import Web.HTML.HTMLCanvasElement (HTMLCanvasElement)
 
 
@@ -197,6 +197,10 @@ foreign import clear
   :: WebGLRenderingContext -> Mask -> Effect Unit
 
 newtype DrawMode = DrawMode Int
+
+-- instance drawModeEq :: 
+derive instance drawModeEq :: Eq DrawMode
+
 dm_points :: DrawMode
 dm_points = DrawMode 0
 dm_lines :: DrawMode

@@ -3,6 +3,8 @@ module Data.Matrix.Transform(
   ,rotateXM3
   ,rotateYM4
   ,rotateZM4
+  ,rotate
+  ,unsafeRotate
   ,(|>>),trans
   ,class VectorTransform
   ,(|=>),transVectors
@@ -17,11 +19,13 @@ module Data.Matrix.Transform(
 
 import Prelude
 
-import Data.Tuple.Nested
 import Data.Array (foldl, zipWith)
-import Data.Matrix (class MatrixOps, class MatrixOrder, M3(..), M4(..), Matrix, getOrder, mat3, mat4, rows)
-import Data.Vector (class VectorDim, V3(..), V4(..), Vector(..), getDim)
-import Math (cos, pi, sin,tan)
+import Data.Matrix (class MatrixOps, class MatrixOrder, M3(..), M4(..), Matrix, getOrder, i4, mat3, mat4, rows, transpose)
+import Data.Maybe (Maybe(..))
+import Data.Tuple.Nested (type (/\))
+import Data.Vector (class VectorDim, V3(..), V4(..), Vector(..), getDim, normal)
+import Math (cos, pi, sin, sqrt, tan)
+import Partial.Unsafe (unsafePartial)
 
 radians :: Number -> Number
 radians a = a * pi / 180.0
@@ -105,6 +109,34 @@ rotateZM4 a = let s = sin $ radians a in
                 s     c     0.0 0.0
                 0.0   0.0   1.0 0.0
                 0.0   0.0   0.0 1.0
+
+
+rotate :: Vector V4 -> Vector V4 -> Number ->Maybe(Matrix M4)
+rotate fixedPoint direction degree = case normal direction of
+  Nothing -> Nothing
+  Just normalized -> Just $ unsafePartial $ rotateImpl fixedPoint normalized degree
+  where
+    rotateImpl :: Partial => Vector V4 -> Vector V4 -> Number -> Matrix M4
+    rotateImpl (Vector [a,b,c,_] _) (Vector [x,y,z,_] _) d = 
+      let t = translate (-a) (-b) (-c) in
+      let dx = sqrt (y*y+z*z) in
+      
+      let rx = mat4 1.0   0.0    0.0    0.0
+                    0.0  (z/dx) (-y/dx) 0.0
+                    0.0  (y/dx) (z/dx)  0.0
+                    0.0   0.0    0.0    1.0 in
+      let ry = mat4 dx  0.0  (-x)  0.0 
+                    0.0 1.0  0.0   0.0
+                    x   0.0  dx    0.0
+                    0.0 0.0  0.0   1.0  in
+      let t1 = translate a b c in
+        t1 * (transpose rx) * (transpose ry)* (rotateZM4 d) * ry *rx* t
+
+unsafeRotate:: Vector V4 -> Vector V4 -> Number -> Matrix M4  
+unsafeRotate  fixedPoint direction degree = 
+  case rotate fixedPoint direction degree of
+    Just m  -> m
+    Nothing -> i4
 
 cot :: Number -> Number
 cot a = 1.0 / (tan a)

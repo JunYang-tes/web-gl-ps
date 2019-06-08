@@ -10,6 +10,8 @@ module Data.Vector(
   ,dot
   ,(<.>)
   ,scale, (<**>)
+  ,len
+  ,normal
   ,mix
   ,class VectorDim
   ,getDim
@@ -19,9 +21,13 @@ module Data.Vector(
 ) where
 import Prelude
 
-import Data.Array (concat, foldl, zipWith)
+import Data.Array (concat, foldl, length, zipWith)
+import Data.Foldable (sum)
+import Data.Int (toNumber)
+import Data.Maybe (Maybe(..))
 import Data.Semiring (class Semiring)
 import Data.Show (class Show, show)
+import Math (sqrt)
 
 data Vector o = Vector (Array Number) o
 
@@ -35,6 +41,8 @@ getArray (Vector arr _) = arr
 class VectorOps o where
   dot:: Vector o -> Vector o -> Number
   scale:: Number -> Vector o -> Vector o
+  len:: Vector o -> Number
+  normal:: Vector o -> Maybe( Vector o)
   -- mix s a b = s <**> a + (1 - s) <**> b
 
 infixl 6 dot as <.>
@@ -77,6 +85,16 @@ fdot d (Vector a _) (Vector b _) = foldl (\r n -> r+n) 0.0 $ zipWith (*) a b
 fscale :: forall d. d -> Number -> Vector d -> Vector d
 fscale d s (Vector a _) = (Vector (map (\v -> s * v) a) d)
 
+flen :: forall d. d -> Vector d -> Number
+flen _ (Vector arr _) = (sqrt $ sum $ map (\i -> i*i) arr)
+
+fnormal :: forall d. d -> Vector d -> Maybe(Vector d)
+fnormal d v = let l = flen d v in
+  case l of
+    0.0 -> Nothing
+    _ -> Just $ fscale d (1.0 / l) v
+
+
 instance v2Semiring:: Semiring (Vector V2) where
   add = fadd V2
   mul = fmul V2
@@ -86,6 +104,21 @@ instance v2Semiring:: Semiring (Vector V2) where
 instance v2Ops :: VectorOps V2 where
   dot = fdot V2
   scale = fscale V2
+  len = flen V2
+  normal = fnormal V2
+
+instance v3Ops :: VectorOps V3 where
+  dot = fdot V3
+  scale = fscale V3
+  len = flen V3
+  normal = fnormal V3
+
+instance v4Ops :: VectorOps V4 where
+  dot = fdot V4
+  scale = fscale V4
+  len = flen V4
+  normal = fnormal V4
+
   -- crose a b = a
 
 flattenV :: forall a.Array (Vector a) -> Array Number
