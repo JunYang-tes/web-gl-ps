@@ -1,21 +1,18 @@
 module Demos.DrawArray where
+import Demos.Template
+
 import Controls (useRadioGroup)
+import Data.Array.NonEmpty (NonEmptyArray, findIndex, unsafeIndex)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.Nullable (Nullable, null, toNullable)
 import Data.Tuple.Nested ((/\))
-import Effect (Effect)
-import Prelude (Unit, bind, discard, eq, negate, pure, unit, ($))
-import WebGL (DrawMode, FragmentShader, VertexShader, WebGLProgram, WebGLRenderingContext, bindBuffer, bt_array_buffer, bufferData, createBuffer, dm_line_loop, dm_line_strip, dm_lines, dm_triangle_fan, dm_triangle_strip, dm_triangles, drawArrays, enableVertexAttribArray, getAttribLocation, two, usage_static_draw, vertexAttribPointer, vt_float)
-
-import Data.Array.NonEmpty (NonEmptyArray, findIndex, unsafeIndex)
-import Data.Nullable (Nullable, toNullable)
 import Debug (debugE)
+import Effect (Effect)
 import Partial.Unsafe (unsafePartial)
-import React.Basic.DOM as D
+import Prelude (Unit, bind, discard, eq, negate, pure, ($))
 import React.Basic.Hooks as RH
 import Unsafe.Coerce (unsafeCoerce)
-import WebGL.React (mkWebGLWithShaders)
+import WebGL (DrawMode, FragmentShader, VertexShader, WebGLProgram, WebGLRenderingContext, bindBuffer, bt_array_buffer, bufferData, createBuffer, dm_line_loop, dm_line_strip, dm_lines, dm_triangle_fan, dm_triangle_strip, dm_triangles, drawArrays, enableVertexAttribArray, getAttribLocation, two, usage_static_draw, vertexAttribPointer, vt_float)
 
 vertex :: VertexShader
 vertex = """
@@ -60,8 +57,8 @@ draw gl prog dm = do
       debugE "draw array"
       drawArrays gl dm 0 13
     
-update :: WebGLRenderingContext ->  DrawMode -> Effect Unit
-update gl dm = do
+update :: WebGLRenderingContext -> WebGLProgram ->  DrawMode -> Effect Unit
+update gl _ dm = do
   drawArrays gl dm 0 13
 
 drawModeNames :: NonEmptyArray String
@@ -76,28 +73,10 @@ drawModes = unsafeCoerce $ [dm_lines,dm_line_loop,dm_line_strip,dm_triangle_fan
 ]
 
 mkDrawArrayDemo :: RH.CreateComponent {}
-mkDrawArrayDemo = do
-  webgl <- mkWebGLWithShaders
-  RH.component "DrawArray" \props -> RH.do
-    ref <- RH.useRef (null:: Nullable WebGLRenderingContext)
+mkDrawArrayDemo = template vertex fragment draw update 
+  RH.do
     name /\ ele <-useRadioGroup drawModeNames
-    ref_ <- RH.renderRefMaybe ref
-    RH.useEffect name do
-      case ref_ of
-        Nothing -> pure unit
-        Just (gl) -> do
-          case findIndex (eq name) drawModeNames of
-            Nothing -> pure unit
-            Just ind -> update gl $ unsafePartial $ unsafeIndex drawModes ind
-      pure $ pure unit
-    pure $ D.div_ [
-      ele
-      ,RH.element webgl {
-        vertex
-        ,fragment
-        ,onReady: (\gl prog -> do
-          draw gl prog dm_lines
-          RH.writeRef ref $ toNullable $ Just $ gl
-        )
-      }
-    ]
+    pure $ case findIndex (eq name) drawModeNames of
+      Nothing -> (unsafePartial $ unsafeIndex drawModes 0) /\ [ele]
+      Just i  -> (unsafePartial $ unsafeIndex drawModes i) /\ [ele]
+ 

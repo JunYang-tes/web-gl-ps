@@ -2,18 +2,15 @@ module Demos.RotationInsideShader where
 import Controls (useSlider)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.Nullable (Nullable, null, toNullable)
-import Data.Tuple (Tuple)
-import Data.Tuple.Nested ((/\))
+import Data.Tuple.Nested (type (/\), (/\)) 
 import Data.Vector (flattenV)
 import Debug (debugE)
 import Demos.Rotate (ColorCube(..), colorCube)
 import Effect (Effect)
-import Prelude (Unit, bind, discard, pure, show, unit, ($), (<>))
-import React.Basic.DOM as D
+import Prelude (Unit, bind, discard, pure, unit, ($))
 import React.Basic.Hooks as RH
-import WebGL (FragmentShader, VertexShader, WebGLProgram, WebGLRenderingContext, bindBuffer, bt_array_buffer, bufferData, clear, clear_color_buffer_bit, clear_depth_buffer_bit, createBuffer, dm_triangles, drawArrays, enable, enableVertexAttribArray, enable_depth_test, four, getAttribLocation, getUniformLocation, mask_color_buffer_bit, mask_depth_buffer_bit, uniform3f, usage_static_draw, vertexAttribPointer, vt_float, (.|.))
-import WebGL.React (ProgramReady, mkWebGLWithShaders)
+import WebGL (FragmentShader, VertexShader, WebGLProgram, WebGLRenderingContext, bindBuffer, bt_array_buffer, bufferData, clear, createBuffer, dm_triangles, drawArrays, enable, enableVertexAttribArray, enable_depth_test, four, getAttribLocation, getUniformLocation, mask_color_buffer_bit, mask_depth_buffer_bit, uniform3f, usage_static_draw, vertexAttribPointer, vt_float, (.|.))
+import Demos.Template (template)
 
 vertex :: VertexShader
 vertex = """
@@ -57,8 +54,8 @@ void main() {
   gl_FragColor = fColor;
 }
 """
-draw:: WebGLRenderingContext -> WebGLProgram -> Effect Unit
-draw gl prog = do
+draw:: WebGLRenderingContext -> WebGLProgram -> (Number /\ Number /\ Number)->Effect Unit
+draw gl prog  _ = do
   gl `enable` enable_depth_test
   vertexBuffer <- createBuffer gl
   colorBuffer  <- createBuffer gl
@@ -87,8 +84,8 @@ draw gl prog = do
           pure unit
     _ -> debugE "Can't create buffer"
 
-update :: WebGLRenderingContext -> WebGLProgram -> Number -> Number -> Number -> Effect Unit
-update gl prog rx ry rz = do
+update :: WebGLRenderingContext -> WebGLProgram -> (Number /\ Number /\ Number) -> Effect Unit
+update gl prog (rx /\ ry /\ rz )= do
   gl `clear` (mask_color_buffer_bit .|. mask_depth_buffer_bit)
   rs <- getUniformLocation gl prog "theta"
   case rs of
@@ -100,38 +97,10 @@ update gl prog rx ry rz = do
 
 
 mkRotateInside :: RH.CreateComponent {}
-mkRotateInside = do
-  webgl <- mkWebGLWithShaders:: Effect (
-    RH.ReactComponent (Record
-      (vertex::VertexShader
-      ,fragment:: FragmentShader
-      ,onReady:: ProgramReady
-      )
-    )
-  )
-  RH.component "Rotate" \p -> RH.do
+mkRotateInside = template vertex fragment draw update 
+  RH.do
     rx /\ rx_ele <- useSlider 0.0 0.0 360.0 1.0 "X"
     ry /\ ry_ele <- useSlider 0.0 0.0 360.0 1.0 "Y"
     rz /\ rz_ele <- useSlider 0.0 0.0 360.0 1.0 "Z"
-    glRef <- RH.useRef (null::(Nullable (Tuple WebGLRenderingContext WebGLProgram)))
-    glRef_ <-RH.renderRefMaybe glRef
-    RH.useEffect (show rx <> show ry <> show rz) do
-      case glRef_ of
-        Nothing -> pure unit
-        Just (gl /\ prog) -> do
-          debugE ("update" <> (show rx))
-          update gl prog rx ry rz
-      pure $ pure $unit
-
-    pure $ D.div_ [rx_ele
-      ,ry_ele
-      ,rz_ele
-      ,RH.element webgl {vertex
-        ,onReady: (\gl prog->do
-          RH.writeRef glRef $ toNullable $ Just $ gl /\ prog
-          draw gl prog
-          pure $ unit
-        )
-        ,fragment}
-    ]
+    pure $ (rx /\ ry /\ rz) /\ [rx_ele,ry_ele,rz_ele]
 

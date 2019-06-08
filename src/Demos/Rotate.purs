@@ -1,25 +1,27 @@
 module Demos.Rotate where
 
+import Controls
+import Data.Matrix.Transform
+import Data.Maybe
+import Data.Nullable
+import Data.Tuple.Nested
+import Demos.Template
 import Prelude
 import WebGL
+import WebGL.React
+
 import Control.Monad.Trans.Class (lift)
-import Data.Tuple(Tuple)
-import Data.Tuple.Nested((/\))
 import Data.Array (unsafeIndex)
 import Data.Array.ST (empty, push, run)
 import Data.Either (Either(..))
-import Data.Matrix.Transform
+import Data.Nullable (null, Nullable)
+import Data.Tuple (Tuple)
 import Data.Vector (V4(..), Vector(..), flattenV, vec4)
-import Data.Nullable
-import Data.Maybe
 import Debug (debug, debugE, debugEWithTag)
 import Effect (Effect)
-import Data.Nullable (null,Nullable)
 import Partial.Unsafe (unsafePartial)
 import React.Basic.DOM as D
 import React.Basic.Hooks as RH
-import Controls
-import WebGL.React
 
 vertices :: Array (Vector V4)
 vertices = [
@@ -110,8 +112,8 @@ void main () {
 }
 """
 
-draw:: Number -> Number -> Number -> WebGLRenderingContext -> WebGLProgram -> Effect Unit
-draw rx ry rz gl prog = do
+draw:: WebGLRenderingContext -> WebGLProgram ->(Number /\ Number /\ Number)-> Effect Unit
+draw gl prog (rx /\ ry /\ rz) = do
   gl `enable` enable_depth_test
   vertexBuffer <- createBuffer gl
   colorBuffer  <- createBuffer gl
@@ -143,38 +145,10 @@ rotate rx ry rz vs = let m = (rotateXM4 rx) * (rotateYM4 ry) * (rotateZM4 rz)  i
   map (\v -> trans m v) vs
 
 mkRotate :: RH.CreateComponent {}
-mkRotate = do
-  webgl <- mkWebGLWithShaders:: Effect (
-    RH.ReactComponent (Record
-      (vertex::VertexShader
-      ,fragment:: FragmentShader
-      ,onReady:: ProgramReady
-      )
-    )
-  )
-  RH.component "Rotate" \p -> RH.do
-    rx /\ rx_ele <- useSlider 0.0 0.0 360.0 1.0 "X"
-    ry /\ ry_ele <- useSlider 0.0 0.0 360.0 1.0 "Y"
-    rz /\ rz_ele <- useSlider 0.0 0.0 360.0 1.0 "Z"
-    glRef <- RH.useRef (null::(Nullable (Tuple WebGLRenderingContext WebGLProgram)))
-    glRef_ <-RH.renderRefMaybe glRef
-    RH.useEffect (show rx <> show ry <> show rz) do
-      case glRef_ of
-        Nothing -> pure $ unit
-        Just (gl /\ prog) -> do
-          draw rx ry rz gl prog
-          pure $ unit
-      pure $ pure unit
-
-    pure $ D.div_ [rx_ele
-      ,ry_ele
-      ,rz_ele
-      ,RH.element webgl {vertex
-        ,onReady: (\gl prog->do
-          RH.writeRef glRef $ toNullable $ Just $ gl /\ prog
-          draw 0.0 0.0 0.0 gl prog
-          pure $ unit
-        )
-        ,fragment}
-    ]
+mkRotate = template vertex fragment draw draw (RH.do
+  rx /\ rx_ele <- useSlider 0.0 0.0 360.0 1.0 "X"
+  ry /\ ry_ele <- useSlider 0.0 0.0 360.0 1.0 "Y"
+  rz /\ rz_ele <- useSlider 0.0 0.0 360.0 1.0 "Z"
+  pure ((rx /\ ry /\ rz) /\ [rx_ele,ry_ele,rz_ele])
+)
 

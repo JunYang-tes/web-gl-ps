@@ -45,7 +45,7 @@ helloWebGL gl prog _ = do
       pure unit
 
 updateGL:: WebGLRenderingContext -> WebGLProgram -> (Number /\ Number )-> Effect Unit
-updateGL gl prog (y /\ x) = do
+updateGL gl prog (x /\ y) = do
   buffer <- createBuffer gl
   case buffer of
     (Left err) -> debugE err

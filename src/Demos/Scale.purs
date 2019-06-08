@@ -5,7 +5,7 @@ import Data.Matrix.Transform (rotateXM4, rotateYM4, rotateZM4, scaleX, scaleY, s
 import Data.Maybe (Maybe(..))
 import Data.Nullable (Nullable, null, toNullable)
 import Data.Tuple (Tuple)
-import Data.Tuple.Nested ((/\))
+import Data.Tuple.Nested (type (/\),(/\))
 import Data.Vector (flattenV)
 import Debug (debugE)
 import Demos.Rotate (ColorCube(..), colorCube)
@@ -15,6 +15,7 @@ import React.Basic.DOM as D
 import React.Basic.Hooks as RH
 import WebGL (FragmentShader, VertexShader, WebGLProgram, WebGLRenderingContext, bindBuffer, bt_array_buffer, bufferData, clear, createBuffer, dm_triangles, drawArrays, enable, enableVertexAttribArray, enable_depth_test, four, getAttribLocation, getUniformLocation, mask_color_buffer_bit, mask_depth_buffer_bit, uniform3f, uniformMat4f, usage_static_draw, vertexAttribPointer, vt_float, (.|.))
 import WebGL.React (ProgramReady, mkWebGLWithShaders)
+import Demos.Template
 
 vertex :: VertexShader
 vertex = """
@@ -36,8 +37,8 @@ void main() {
   gl_FragColor = fColor;
 }
 """
-draw:: WebGLRenderingContext -> WebGLProgram -> Effect Unit
-draw gl prog = do
+draw :: WebGLRenderingContext -> WebGLProgram ->( Number /\ Number /\ Number/\ Number /\ Number /\ Number )-> Effect Unit
+draw gl prog _ = do
   gl `enable` enable_depth_test
   vertexBuffer <- createBuffer gl
   colorBuffer  <- createBuffer gl
@@ -67,8 +68,8 @@ draw gl prog = do
           drawArrays gl dm_triangles 0 36
     _ -> debugE "Can't create buffer"
 
-update :: WebGLRenderingContext -> WebGLProgram -> Number -> Number -> Number -> Number -> Number -> Number -> Effect Unit
-update gl prog sx sy sz rx ry rz = do
+update :: WebGLRenderingContext -> WebGLProgram ->( Number /\ Number /\ Number/\ Number /\ Number /\ Number )-> Effect Unit
+update gl prog (rx/\ry/\rz/\sx/\sy/\sz)= do
   gl `clear` (mask_color_buffer_bit .|. mask_depth_buffer_bit)
   rs <- getUniformLocation gl prog "scale"
   case rs of
@@ -80,43 +81,12 @@ update gl prog sx sy sz rx ry rz = do
 
 
 mkScaleDemo :: RH.CreateComponent {}
-mkScaleDemo = do
-  webgl <- mkWebGLWithShaders:: Effect (
-    RH.ReactComponent (Record
-      (vertex::VertexShader
-      ,fragment:: FragmentShader
-      ,onReady:: ProgramReady
-      )
-    )
-  )
-  RH.component "Rotate" \p -> RH.do
+mkScaleDemo = template vertex fragment draw update 
+  RH.do
     rx /\ rx_ele <- useSlider 0.0 0.0 360.0 1.0 "rotate X"
     ry /\ ry_ele <- useSlider 0.0 0.0 360.0 1.0 "rotate Y"
     rz /\ rz_ele <- useSlider 0.0 0.0 360.0 1.0 "roate Z"
     sx /\ sx_ele <- useSlider 1.0 0.0 1.5 0.01 "scale x"
-    sy /\ sy_ele <- useSlider 1.0 0.0 1.5 0.01 "Y"
-    sz /\ sz_ele <- useSlider 1.0 (-1.0) 1.5 0.01 "Z"
-    glRef <- RH.useRef (null::(Nullable (Tuple WebGLRenderingContext WebGLProgram)))
-    glRef_ <-RH.renderRefMaybe glRef
-    RH.useEffect [sx,sy,sz,rx,ry,rz] do
-      case glRef_ of
-        Nothing -> pure unit
-        Just (gl /\ prog) -> do
-          update gl prog sx sy sz rx ry rz
-      pure $ pure $unit
-
-    pure $ D.div_ [sx_ele
-      ,sy_ele
-      ,sz_ele
-      ,rx_ele
-      ,ry_ele
-      ,rz_ele
-      ,RH.element webgl {vertex
-        ,onReady: (\gl prog->do
-          RH.writeRef glRef $ toNullable $ Just $ gl /\ prog
-          draw gl prog
-          pure $ unit
-        )
-        ,fragment}
-    ]
-
+    sy /\ sy_ele <- useSlider 1.0 0.0 1.5 0.01 "scale y"
+    sz /\ sz_ele <- useSlider 1.0 (-1.0) 1.5 0.01 "scale z"
+    pure $ (rx/\ry/\rz/\sx/\sy/\sz) /\ [rx_ele,ry_ele,rz_ele,sx_ele,sy_ele,sz_ele]

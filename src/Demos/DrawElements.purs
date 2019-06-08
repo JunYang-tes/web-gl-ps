@@ -18,6 +18,7 @@ import Demos.Rotate (colorList, vertices)
 import Effect (Effect)
 import React.Basic.DOM as D
 import React.Basic.Hooks as RH
+import Demos.Template
 
 vertex :: String
 vertex = """
@@ -41,8 +42,8 @@ void main () {
 }
 """
 
-draw:: WebGLRenderingContext -> WebGLProgram -> Effect Unit
-draw gl prog = do
+draw:: WebGLRenderingContext -> WebGLProgram -> (Number /\ Number /\ Number)-> Effect Unit
+draw gl prog _ = do
   gl `enable` enable_depth_test
   vertxBuffer <- createBuffer gl
   colorBuffer <- createBuffer gl
@@ -93,8 +94,8 @@ draw gl prog = do
     _ -> debugE "Can't create buffer"
   
 update :: WebGLRenderingContext -> WebGLProgram 
-  -> Number -> Number -> Number -> Effect Unit
-update gl prog rx ry rz = do
+  ->(Number /\ Number /\ Number) -> Effect Unit
+update gl prog (rx /\ ry /\ rz) = do
   gl `clear` (mask_color_buffer_bit .|. mask_depth_buffer_bit)
   rs <- getUniformLocation gl prog "transform"
   case rs of
@@ -104,37 +105,9 @@ update gl prog rx ry rz = do
       drawElements gl dm_triangles 36 unsigned_byte 0
 
 mkDrawElementDemo :: RH.CreateComponent {}
-mkDrawElementDemo = do
-  webgl <- mkWebGLWithShaders:: Effect (
-    RH.ReactComponent (Record
-      (vertex::VertexShader
-      ,fragment:: FragmentShader
-      ,onReady:: ProgramReady
-      )
-    )
-  )
-  RH.component "CubeMadeByDrawElements" \props -> RH.do
+mkDrawElementDemo = template vertex fragment draw update
+  RH.do
     rx /\ rx_ele <- useSlider 0.0 0.0 360.0 1.0 "rotate X"
     ry /\ ry_ele <- useSlider 0.0 0.0 360.0 1.0 "rotate Y"
     rz /\ rz_ele <- useSlider 0.0 0.0 360.0 1.0 "rotate Z"
-    glRef <- RH.useRef (null::(Nullable (Tuple WebGLRenderingContext WebGLProgram)))
-    glRef_ <-RH.renderRefMaybe glRef
-    RH.useEffect [rx,ry,rz] do
-      case glRef_ of
-        Nothing -> pure unit
-        Just (gl /\ prog) -> do
-          update gl prog rx ry rz
-      pure $ pure unit
-      
-    pure $ D.div_ [ 
-      rx_ele
-      ,ry_ele
-      ,rz_ele
-      ,RH.element webgl {vertex
-      ,fragment
-      ,onReady:(\gl prog -> do
-        RH.writeRef glRef $ toNullable $ Just $ gl /\ prog
-        draw gl prog
-        pure $ unit
-      )
-      }]
+    pure $ (rx /\ ry /\ rz) /\ [rx_ele,ry_ele,rz_ele]
