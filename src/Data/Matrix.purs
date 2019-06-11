@@ -15,6 +15,7 @@ module Data.Matrix(mat2
 ,subMat
 ,fdet
 ,flattenM
+,fromVec4
 ) where
 import Prelude
 
@@ -26,6 +27,7 @@ import Data.Array.ST (withArray)
 import Data.Array.ST.Partial (poke, peek)
 import Data.ArrayEx (filterp)
 import Data.Maybe (Maybe(..))
+import Data.Vector (V4(..), Vector(..), toArray)
 import Debug (debug, debugc)
 import Partial.Unsafe (unsafePartial)
 
@@ -294,3 +296,14 @@ instance m4Math :: MatrixOps M4 where
   rows = frows M4
   det = fdet M4
   invert _ = Nothing
+
+fromVec4 :: Vector V4 -> Vector V4 -> Vector V4 -> Vector V4 -> Matrix M4
+fromVec4 a b c d = unsafePartial $ fromVec4' (toArray a) (toArray b) (toArray c) (toArray d)
+  where
+    fromVec4':: Partial => 
+      Array Number -> Array Number -> Array Number -> Array Number -> Matrix M4
+    fromVec4' [a,b,c,d] [e,f,g,h] [i,j,k,l] [m,n,o,p] = 
+      mat4 a b c d 
+           e f g h
+           i j k l
+           m n o p

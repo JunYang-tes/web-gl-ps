@@ -20,10 +20,10 @@ module Data.Matrix.Transform(
 import Prelude
 
 import Data.Array (foldl, zipWith)
-import Data.Matrix (class MatrixOps, class MatrixOrder, M3(..), M4(..), Matrix, getOrder, i4, mat3, mat4, rows, transpose)
+import Data.Matrix (class MatrixOps, class MatrixOrder, M3(..), M4(..), Matrix, fromVec4, getOrder, i4, mat3, mat4, rows, transpose)
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested (type (/\))
-import Data.Vector (class VectorDim, V3(..), V4(..), Vector(..), getDim, normal)
+import Data.Vector (class VectorDim, V3(..), V4(..), Vector(..), cross3, dot, getDim, normal, toArray, unsafeExtend, unsafeNormal, vec4)
 import Math (cos, pi, sin, sqrt, tan)
 import Partial.Unsafe (unsafePartial)
 
@@ -45,6 +45,11 @@ translate x y z = mat4 1.0 0.0 0.0   x
                        0.0 1.0 0.0   y
                        0.0 0.0 1.0   z
                        0.0 0.0 0.0 1.0
+
+translateV3 :: Vector V3 -> Matrix M4
+translateV3 v = unsafePartial
+  let [x,y,z] = toArray v in
+    translate x y z
 
 rotateXM4 :: Number -> Matrix M4
 rotateXM4 a = let s = sin( radians a) in
@@ -211,3 +216,13 @@ instance v3Transform :: VectorTransform V3 M3 where
 
 instance v4Transform :: VectorTransform V4 M4 where
   trans = ftrans V4 M4
+
+lookAt :: Vector V3 -> Vector V3 -> Vector V3 -> Matrix M4
+lookAt eye at up =unsafePartial
+  let w = unsafeNormal V3 $ at - eye in
+  let u = unsafeNormal V3 $ cross3 up w in
+  let v = unsafeNormal V3 $ cross3 w u  in
+  (translateV3 $ negate eye) * fromVec4 (unsafeExtend V3 V4 u 0.0)
+           (unsafeExtend V3 V4 v 0.0)
+           (unsafeExtend V3 V4 w 0.0)
+           (vec4 0.0 0.0 0.0 1.0)
