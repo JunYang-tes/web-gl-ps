@@ -13,6 +13,7 @@ import Data.Array as Array
 import Data.Map (fromFoldable, lookup)
 import Data.Tuple.Nested ((/\))
 import Demos.DrawArray (mkDrawArrayDemo)
+import Demos.Gasket (mkGasket)
 import Demos.RotateVector (mkRotateVector)
 import Effect.Unsafe (unsafePerformEffect)
 import React.Basic (ReactComponent)
@@ -30,7 +31,8 @@ keys = [
     "rotate" ,
     "rotate inside" ,
     "scale",
-    "rotate around vector (1,1,1)"
+    "rotate around vector (1,1,1)",
+    "Gasket"
 ]
  
 
@@ -41,7 +43,8 @@ demoComponents = map unsafePerformEffect [
   mkRotate,
   mkRotateInside,
   mkScaleDemo,
-  mkRotateVector
+  mkRotateVector,
+  mkGasket
 ]
 demos =  fromFoldable $
   Array.zipWith (\n c -> n /\ c) keys demoComponents
