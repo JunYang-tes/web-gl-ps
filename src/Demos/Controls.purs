@@ -3,6 +3,7 @@ import Data.Array.NonEmpty
 import Data.Functor.Indexed
 import Data.Maybe
 import Debug
+import Data.Vector hiding (toArray)
 import Prelude
 
 import Data.FunctorWithIndex (mapWithIndex)
@@ -52,3 +53,13 @@ useSlider init min max step label = RH.do
             },
     D.text $ show state
   ])
+
+useVector3 ix iy iz mx my mz max may maz step label = RH.do
+  x /\ ex <- useSlider ix mx max step ""
+  y /\ ey <- useSlider iy my may step ""
+  z /\ ez <- useSlider iz mz maz step ""
+  pure $ (vec3 x y z) /\ D.div_ [
+    D.label_ [D.text (label <> "(" <> show x <> ", " <> show y <> ", " <> show z <> ")" )],
+    ex,ey,ez
+  ]
+  

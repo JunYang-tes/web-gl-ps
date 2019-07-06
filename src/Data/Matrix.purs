@@ -36,6 +36,9 @@ data M2 = M2
 data M3 = M3
 data M4 = M4
 
+derive instance m4Eq :: Eq M4
+derive instance mat4Eq :: Eq (Matrix M4)
+
 
 class MatrixOrder a where
   getOrder:: a -> Int
@@ -303,7 +306,7 @@ fromVec4 a b c d = unsafePartial $ fromVec4' (toArray a) (toArray b) (toArray c)
     fromVec4':: Partial => 
       Array Number -> Array Number -> Array Number -> Array Number -> Matrix M4
     fromVec4' [a,b,c,d] [e,f,g,h] [i,j,k,l] [m,n,o,p] = 
-      mat4 a b c d 
-           e f g h
-           i j k l
-           m n o p
+      mat4 a e i m
+           b f j n
+           c g k o
+           d h l p

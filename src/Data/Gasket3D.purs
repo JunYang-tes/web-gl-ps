@@ -52,4 +52,10 @@ gasket3D a b c d level =
         go m13 m23 p3 m43 sl <>
         go m14 m24 m43 p4 sl 
 
-    
+divided3 :: (Points /\ Colors)
+divided3 = gasket3D 
+                (vec3  0.0000   0.0000  (-1.0000) )
+                (vec3  0.0000   0.9428   0.3333 ) 
+                (vec3 (-0.8165)  (-0.4714)   0.3333 ) 
+                (vec3  0.8165  (-0.4714)   0.3333 ) 
+                3    

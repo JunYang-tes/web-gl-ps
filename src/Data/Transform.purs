@@ -5,6 +5,7 @@ module Data.Matrix.Transform(
   ,rotateZM4
   ,rotate
   ,unsafeRotate
+  ,translateV3
   ,(|>>),trans
   ,class VectorTransform
   ,(|=>),transVectors
@@ -15,15 +16,17 @@ module Data.Matrix.Transform(
   ,shearXZ
   ,shearYX
   ,shearYZ
+  ,lookAt
 ) where
 
 import Prelude
 
 import Data.Array (foldl, zipWith)
-import Data.Matrix (class MatrixOps, class MatrixOrder, M3(..), M4(..), Matrix, fromVec4, getOrder, i4, mat3, mat4, rows, transpose)
+import Data.Matrix (class MatrixOps, class MatrixOrder, M3(..), M4(..), Matrix, flattenM, fromVec4, getOrder, i4, mat3, mat4, rows, transpose)
 import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested (type (/\))
-import Data.Vector (class VectorDim, V3(..), V4(..), Vector(..), cross3, dot, getDim, normal, toArray, unsafeExtend, unsafeNormal, vec4)
+import Data.Vector (class VectorDim, V3(..), V4(..), Vector(..), cross3, dot, getDim, len, normal, scale, toArray, unsafeExtend, unsafeNormal, vec2, vec3, vec4)
+import Debug (debug)
 import Math (cos, pi, sin, sqrt, tan)
 import Partial.Unsafe (unsafePartial)
 
@@ -217,12 +220,19 @@ instance v3Transform :: VectorTransform V3 M3 where
 instance v4Transform :: VectorTransform V4 M4 where
   trans = ftrans V4 M4
 
+
 lookAt :: Vector V3 -> Vector V3 -> Vector V3 -> Matrix M4
-lookAt eye at up =unsafePartial
-  let w = unsafeNormal V3 $ at - eye in
-  let u = unsafeNormal V3 $ cross3 up w in
-  let v = unsafeNormal V3 $ cross3 w u  in
-  (translateV3 $ negate eye) * fromVec4 (unsafeExtend V3 V4 u 0.0)
-           (unsafeExtend V3 V4 v 0.0)
-           (unsafeExtend V3 V4 w 0.0)
-           (vec4 0.0 0.0 0.0 1.0)
+lookAt eye at up
+  | eye == at                               = i4
+  | up == vec3 0.0 0.0 0.0                  = i4
+  | cross3 (at -eye) up == vec3 0.0 0.0 0.0 = i4
+  | otherwise = unsafePartial
+     let v = unsafeNormal V3 $ at - eye in
+     let n = unsafeNormal V3 $ cross3 v up in
+     let u = cross3 n v in
+     let r = transpose $ fromVec4 
+                           (unsafeExtend V3 V4 n 0.0)
+                           (unsafeExtend V3 V4 u 0.0)
+                           (unsafeExtend V3 V4 (negate v) 0.0)
+                           (vec4 0.0 0.0 0.0 1.0)  in
+        r * (translateV3 $ negate eye)
